@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="isde_telegram_bot" default="execute" basedir=".">
+
+    <!-- PART 2: General properties definitions -->
+    <property name="build.dir" value="build"/>
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="libs"/>
+
+        <path id="lib.path.id">
+        <fileset dir="${lib.dir}"/>
+    </path>
+
+
+    <!-- PART 3: compilation and execution targets for this session -->
+    <target name="init">
+        <echo message="Init has been called"/>
+        <mkdir dir="${build.dir}"/>
+        <echo message="${build.dir} has been created"/>
+    </target>
+
+    <target name="clean">
+        <echo message="Clean has been called"/>
+        <delete dir="${build.dir}"/>
+        <echo message="${build.dir} has been deleted"/>
+
+    </target>
+
+
+
+    <target name="install" depends="clean, init">
+        <echo message="Compile target has been called"/>
+        <echo message="Using java ${ant.java.version}"/>
+
+
+        <javac srcdir="${src.dir}" destdir="${build.dir}"
+               includeAntRuntime="false"
+               classpathref="lib.path.id"
+               target="1.8" source="1.8"
+               debug="true">
+        </javac>
+
+        <copy todir="${build.dir}" overwrite="true">
+            <fileset dir="${src.dir}">
+                <include name="*.xml"/>
+                <include name="**/*.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+
+
+    <target name="execute" depends="install">
+        <java classname="com.unitn.telegram_bot.Bot" classpath="${build.dir}" fork="true">
+            <arg value="$JAVA_OPTS  -cp"/>
+            <classpath>
+                <path location="build"/>
+                <fileset dir="libs">
+                    <include name="**/*.jar"/>
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+
+
+</project>
