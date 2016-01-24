@@ -2,7 +2,7 @@
 
 <project name="isde_telegram_bot" default="execute" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
     <!--<property name="server.url" value="https://pacific-crag-3303.herokuapp.com/ws/people?wsdl"/>-->
-    <property name="server.url" value="http://192.168.0.3:6902/ws/storage?wsdl"/>
+    <property name="server.url" value="http://192.168.0.2:6901/ws/pcservice?wsdl"/>
 
     <!-- PART 1: Ivy properties, download, installation and configuration -->
     <property name="ivy.install.version" value="2.4.0-rc1"/>
