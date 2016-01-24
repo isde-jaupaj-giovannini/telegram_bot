@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="isde_telegram_bot" default="execute" basedir=".">
+    <!--<property name="server.url" value="https://pacific-crag-3303.herokuapp.com/ws/people?wsdl"/>-->
+    <property name="server.url" value="http://192.168.0.3:6902/ws/storage?wsdl"/>
 
     <!-- PART 2: General properties definitions -->
     <property name="build.dir" value="build"/>
     <property name="src.dir" value="src"/>
+    <property name="src.gen.dir" value="src/com/unitn/storage_service"/>
     <property name="lib.dir" value="libs"/>
 
         <path id="lib.path.id">
@@ -22,13 +25,19 @@
     <target name="clean">
         <echo message="Clean has been called"/>
         <delete dir="${build.dir}"/>
+        <delete dir="${src.gen.dir}"/>
         <echo message="${build.dir} has been deleted"/>
+    </target>
 
+    <target name="generate-client">
+        <exec executable="${java.home}/../bin/wsimport">
+            <arg line="-d src -keep  ${server.url}"/>
+        </exec>
     </target>
 
 
 
-    <target name="install" depends="clean, init">
+    <target name="install" depends="clean, init, generate-client">
         <echo message="Compile target has been called"/>
         <echo message="Using java ${ant.java.version}"/>
 
