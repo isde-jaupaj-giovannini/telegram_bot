@@ -185,14 +185,6 @@ public class Bot extends TelegramBot {
     }
 
 
-    private static UserStates handleNoobIntro(Message message, UserState state) {
-        switch (message.getText()) {
-
-            default:
-                return state.getState();
-        }
-    }
-
     // -------------------------------
 
     public static void main(String args[]) {
