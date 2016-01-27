@@ -27,12 +27,15 @@ public class UserState {
         NOOB_INTRO,
         NOOB_INFO,
         REGISTERING,
+        REGISTERING_NAME,
+        REGISTERING_WEIGHT,
+        REGISTERING_HEIGHT,
+        REGISTRATION_COMPLETE,
 
         // Registered users states
         IDLE,
         ASKING_STATS,
         SAVING_DATA,
-        ABORTING_OPERATION,
 
     }
 }

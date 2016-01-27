@@ -80,33 +80,72 @@ public class Bot extends TelegramBot {
 
 
     private static UserState processNextState(Message msg, UserState state) {
-        UserStates nextState = state.getState();
-        System.out.println(state.getState());
+        final String cmd = msg.getText().toUpperCase().trim();
+        final String text = msg.getText().trim();
+
         switch (state.getState()) {
             case NOOB_INTRO:
-                nextState = handleNoobIntro(msg, state);
-                break;
+                switch (cmd){
+                    case "REGISTER":
+                        return state.next(UserStates.REGISTERING);
+                    case "INFO":
+                        return state.next(UserStates.NOOB_INFO);
+                }
             case NOOB_INFO:
-                nextState = UserStates.NOOB_INTRO;
-                break;
+                return state.next(UserStates.NOOB_INTRO);
             case REGISTERING:
-                break;
+                switch (cmd){
+                    case "YES":
+                        return state.next(UserStates.REGISTERING_NAME);
+                    case "NO":
+                        return state.next(UserStates.NOOB_INTRO);
+                }
+            case REGISTERING_NAME:
+                switch (cmd){
+                    case "CANCEL":
+                        return state.next(UserStates.NOOB_INTRO);
+                    default:
+                        //TODO Store somewhere the actual value
+                        return state.next(UserStates.REGISTERING_WEIGHT);
+                }
+            case REGISTERING_WEIGHT:
+                switch (cmd){
+                    case "CANCEL":
+                        return state.next(UserStates.NOOB_INTRO);
+                    default:
+                        //TODO Store somewhere the actual value
+                        return state.next(UserStates.REGISTERING_HEIGHT);
+                }
+            case REGISTERING_HEIGHT:
+                switch (cmd){
+                    case "CANCEL":
+                        return state.next(UserStates.NOOB_INTRO);
+                    default:
+                        //TODO Store somewhere the actual value
+                        //TODO Sync with other service at this point
+                        return state.next(UserStates.REGISTRATION_COMPLETE);
+                }
+            case REGISTRATION_COMPLETE: // Intentional Fallthrough to handle command in these two states in the same way
             case IDLE:
-                break;
-            case ASKING_STATS:
-                break;
-            case SAVING_DATA:
-                break;
-            case ABORTING_OPERATION:
-                break;
+                switch (cmd){
+                    case "SAVE":
+                        return state.next(UserStates.SAVING_DATA);
+                    case "STATS":
+                        return state.next(UserStates.ASKING_STATS);
+                }
+            case ASKING_STATS: // TODO expand
+                return state.next(UserStates.IDLE);
+            case SAVING_DATA: // TODO expand
+                return state.next(UserStates.IDLE);
+
         }
-        return state.next(nextState);
+        return state;
     }
 
 
     private static BotResponse processResponse(UserState state) {
 
-        String text = "";
+        String text = state.getState().name();//Initial value for debugging  ow "" is just as good // TODO set it as ""
         OptionalArgs args = null;
         switch (state.getState()) {
             case NOOB_INTRO:
@@ -118,16 +157,29 @@ public class Bot extends TelegramBot {
                 args = oneTimeKeyboard("BACK");
                 break;
             case REGISTERING:
-                text = "Please write here your data in this format:\n<nickname> <weight> <height>!!";
+                text = "In order to register you will need to provide a NAME and your current WEIGTH and HEIGHT\nDo you wish to continue?";
+                args = oneTimeKeyboard("YES", "NO");
                 break;
-            case IDLE:
+            case REGISTERING_NAME:
+                text = "Insert your name (nickname)";
+                break;
+            case REGISTERING_WEIGHT:
+                text = "Insert your weight in kg (ex: 50)";
+                break;
+            case REGISTERING_HEIGHT:
+                text = "Insert your height in meters (ex: 1.70)";
+                break;
+            case REGISTRATION_COMPLETE:
+                text = "Registration complete!\n";
+            case IDLE:  // INTENTIONAL FALLTHROUGH
+                text += "What do you want to do now?";
+                args = oneTimeKeyboard("SAVE", "STATS");
                 break;
             case ASKING_STATS:
                 break;
             case SAVING_DATA:
                 break;
-            case ABORTING_OPERATION:
-                break;
+
         }
         return new BotResponse(state.getTelegramChat(), text, args);
     }
@@ -135,10 +187,7 @@ public class Bot extends TelegramBot {
 
     private static UserStates handleNoobIntro(Message message, UserState state) {
         switch (message.getText()) {
-            case "REGISTER":
-                return UserStates.REGISTERING;
-            case "INFO":
-                return UserStates.NOOB_INFO;
+
             default:
                 return state.getState();
         }
