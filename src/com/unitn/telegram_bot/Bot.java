@@ -25,7 +25,7 @@ import static com.unitn.telegram_bot.model.UserState.validateWeight;
  */
 public class Bot extends TelegramBot {
 
-    ProcessCentricService pcService = new PCService().getPCSImplPort();
+    static ProcessCentricService pcService = new PCService().getPCSImplPort();
 
     // FRP
     StreamSink<Message> incomingMessages = new StreamSink<>();
@@ -48,7 +48,11 @@ public class Bot extends TelegramBot {
             CellLoop<Map<Integer, UserState>> usersL = new CellLoop<>();
 
             userExists =
-                    incomingMessages.snapshot(usersL, (message, users) -> new Pair<>(users.containsKey(message.getFrom().getId()), message));// TODO insert PCS call
+                    incomingMessages.snapshot(usersL, (message, users) -> {
+                        final int telId = message.getFrom().getId();
+                        final boolean userExists = pcService.userExists(telId) || users.containsKey(telId);
+                        return new Pair<>(userExists, message);
+                    });
 
             fromUsers =
                     userExists.filter(Pair::getKey).map(Pair::getValue);
@@ -87,6 +91,9 @@ public class Bot extends TelegramBot {
         final String cmd = msg.getText().toUpperCase().trim();
         final String text = msg.getText().trim();
 
+        if(state == null){ // This is triggered when a registered users comes back after a server restart, or a clean up of userStates map
+            state = UserState.oldUser(msg);
+        }
         switch (state.getState()) {
             case NOOB_INTRO:
                 switch (cmd){
@@ -111,7 +118,7 @@ public class Bot extends TelegramBot {
                     default:
                         String name = validateName(text);
                         if(name!=null){
-                            //TODO Store somewhere the actual value
+                            state.setReg_name(name);
                             return state.next(UserStates.REGISTERING_WEIGHT);
                         }
                         //ELSE return current state  at the bottom of this function
@@ -124,7 +131,7 @@ public class Bot extends TelegramBot {
                     default:
                         Integer weight = validateWeight(text);
                         if(weight!=null){
-                            //TODO Store somewhere the actual value
+                            state.setReg_weight(weight);
                             return state.next(UserStates.REGISTERING_HEIGHT);
                         }
                         //ELSE return current state  at the bottom of this function
@@ -137,12 +144,17 @@ public class Bot extends TelegramBot {
                     default:
                         Float height = validateHeight(text);
                         if(height!=null){
-                            //TODO Store somewhere the actual value
-                            //TODO Sync with other service at this point
-                            return state.next(UserStates.REGISTRATION_COMPLETE);
+                            state.setReg_height(height);
+                            if(pcService.registerNewUser(state.getUserData())){
+                                return state.next(UserStates.REGISTRATION_COMPLETE);
+                            }else{
+                                return state.next(UserStates.REGISTRATION_FAILED);
+                            }
                         }
                         //ELSE return current state  at the bottom of this function
                 }
+                break;
+            case REGISTRATION_FAILED:
                 break;
             case REGISTRATION_COMPLETE: // Intentional Fallthrough to handle command in these two states in the same way
             case IDLE:
@@ -187,6 +199,8 @@ public class Bot extends TelegramBot {
                 break;
             case REGISTERING_HEIGHT:
                 text = "Insert your height in meters (ex: 1.70)";
+                break;
+            case REGISTRATION_FAILED:
                 break;
             case REGISTRATION_COMPLETE:
                 text = "Registration complete!\n";

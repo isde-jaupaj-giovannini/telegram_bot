@@ -1,6 +1,7 @@
 package com.unitn.telegram_bot.model;
 
 import co.vandenham.telegram.botapi.types.Message;
+import com.unitn.local_database.UserData;
 import lombok.Data;
 
 /**
@@ -13,13 +14,35 @@ public class UserState {
     final int telegramChat;
     final UserStates state;
 
+    String reg_name;
+    Integer reg_weight;
+    Float reg_height;
 
     public static UserState newUser(Message message){
         return new UserState(message.getFrom().getId(), message.getChat().getId(), UserStates.NOOB_INTRO);
     }
 
+    public static UserState oldUser(Message message){
+        return new UserState(message.getFrom().getId(), message.getChat().getId(), UserStates.IDLE);
+    }
+
+
     public UserState next(UserStates newState){
-        return new UserState(telegramId, telegramChat, newState );
+        final UserState nextState = new UserState(telegramId, telegramChat, newState );
+        nextState.reg_name = reg_name;
+        nextState.reg_weight = reg_weight;
+        nextState.reg_height = reg_height;
+        return  nextState;
+    }
+
+
+    public UserData getUserData(){
+        final UserData user = new UserData();
+        user.setIdTelegram(telegramId);
+        user.setName(reg_name);
+        user.setWeight(reg_weight);
+        user.setHeight(reg_height);
+        return user;
     }
 
 
@@ -30,6 +53,7 @@ public class UserState {
         REGISTERING_NAME,
         REGISTERING_WEIGHT,
         REGISTERING_HEIGHT,
+        REGISTRATION_FAILED,
         REGISTRATION_COMPLETE,
 
         // Registered users states
