@@ -16,6 +16,10 @@ import nz.sodium.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.unitn.telegram_bot.model.UserState.validateHeight;
+import static com.unitn.telegram_bot.model.UserState.validateName;
+import static com.unitn.telegram_bot.model.UserState.validateWeight;
+
 /**
  * Created by demiurgo on 1/17/16.
  */
@@ -50,7 +54,7 @@ public class Bot extends TelegramBot {
                     userExists.filter(Pair::getKey).map(Pair::getValue);
 
             fromNewUsers =
-                    userExists.filter(pair -> !pair.getKey()).map(Pair::getValue).map(message -> UserState.newUser(message));
+                    userExists.filter(pair -> !pair.getKey()).map(Pair::getValue).map(UserState::newUser);
 
             nextState =
                     fromUsers.snapshot(usersL, (message, usersMap) -> processNextState(message, usersMap.get(message.getFrom().getId())));
@@ -105,26 +109,41 @@ public class Bot extends TelegramBot {
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
-                        //TODO Store somewhere the actual value
-                        return state.next(UserStates.REGISTERING_WEIGHT);
+                        String name = validateName(text);
+                        if(name!=null){
+                            //TODO Store somewhere the actual value
+                            return state.next(UserStates.REGISTERING_WEIGHT);
+                        }
+                        //ELSE return current state  at the bottom of this function
                 }
+                break;
             case REGISTERING_WEIGHT:
                 switch (cmd){
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
-                        //TODO Store somewhere the actual value
-                        return state.next(UserStates.REGISTERING_HEIGHT);
+                        Integer weight = validateWeight(text);
+                        if(weight!=null){
+                            //TODO Store somewhere the actual value
+                            return state.next(UserStates.REGISTERING_HEIGHT);
+                        }
+                        //ELSE return current state  at the bottom of this function
                 }
+                break;
             case REGISTERING_HEIGHT:
                 switch (cmd){
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
-                        //TODO Store somewhere the actual value
-                        //TODO Sync with other service at this point
-                        return state.next(UserStates.REGISTRATION_COMPLETE);
+                        Float height = validateHeight(text);
+                        if(height!=null){
+                            //TODO Store somewhere the actual value
+                            //TODO Sync with other service at this point
+                            return state.next(UserStates.REGISTRATION_COMPLETE);
+                        }
+                        //ELSE return current state  at the bottom of this function
                 }
+                break;
             case REGISTRATION_COMPLETE: // Intentional Fallthrough to handle command in these two states in the same way
             case IDLE:
                 switch (cmd){

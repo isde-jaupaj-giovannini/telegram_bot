@@ -38,4 +38,26 @@ public class UserState {
         SAVING_DATA,
 
     }
+
+    // VALIDATION FUNCTION USED IN REGISTRATION STEPS
+
+    public static String validateName(String name){
+        return name != null && !name.isEmpty() ? name.trim() : null;
+    }
+
+    public static Integer validateWeight(String weight){
+        try{
+            return Integer.parseInt(weight);
+        }catch (NumberFormatException e){
+            return null;
+        }
+    }
+
+    public static Float validateHeight(String height){
+        try{
+            return Float.parseFloat(height);
+        }catch (NumberFormatException e){
+            return null;
+        }
+    }
 }
