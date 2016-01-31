@@ -155,7 +155,7 @@ public class Bot extends TelegramBot {
                 }
                 break;
             case REGISTRATION_FAILED:
-                break;
+                return state.next(UserStates.NOOB_INTRO);
             case REGISTRATION_COMPLETE: // Intentional Fallthrough to handle command in these two states in the same way
             case IDLE:
                 switch (cmd){
@@ -201,6 +201,8 @@ public class Bot extends TelegramBot {
                 text = "Insert your height in meters (ex: 1.70)";
                 break;
             case REGISTRATION_FAILED:
+                text = "Registration failed.\nTry later";
+                args = oneTimeKeyboard("Ok...");
                 break;
             case REGISTRATION_COMPLETE:
                 text = "Registration complete!\n";
