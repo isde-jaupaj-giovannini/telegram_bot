@@ -7,18 +7,17 @@ import co.vandenham.telegram.botapi.types.Message;
 import co.vandenham.telegram.botapi.types.ReplyKeyboardMarkup;
 import com.unitn.process_centric_service.PCService;
 import com.unitn.process_centric_service.ProcessCentricService;
+import com.unitn.storage_service.Goal;
 import com.unitn.telegram_bot.model.BotResponse;
 import com.unitn.telegram_bot.model.UserState;
-import com.unitn.telegram_bot.model.UserState.UserStates;
+import com.unitn.telegram_bot.model.UserState.*;
 import javafx.util.Pair;
 import nz.sodium.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.unitn.telegram_bot.model.UserState.validateHeight;
-import static com.unitn.telegram_bot.model.UserState.validateName;
-import static com.unitn.telegram_bot.model.UserState.validateWeight;
+import static com.unitn.telegram_bot.model.UserState.*;
 
 /**
  * Created by demiurgo on 1/17/16.
@@ -167,6 +166,27 @@ public class Bot extends TelegramBot {
             case ASKING_STATS: // TODO expand
                 return state.next(UserStates.IDLE);
             case SAVING_DATA: // TODO expand
+                switch (cmd){
+                    case "CANCEL":
+                        return state.next(UserStates.IDLE);
+                    case "GOAL":
+                        return state.next(UserStates.SAVE_GOAL);
+                    case "STEPS":
+                        return state.next(UserStates.SAVE_STEPS);
+                }
+            case SAVE_STEPS:
+                return state.next(UserStates.IDLE);
+            case SAVE_GOAL:
+                Goal g = validateGoal(cmd);
+                if(g!=null){
+                    pcService.saveGoal(state.getTelegramId(), g);
+                    return state.next(UserStates.SAVED_GOAL);
+
+                }else{
+                    return state.next(UserStates.SAVE_GOAL_FAILED);
+                }
+            case SAVED_GOAL:// Intentional fallthrough
+            case SAVE_GOAL_FAILED:
                 return state.next(UserStates.IDLE);
 
         }
@@ -213,8 +233,21 @@ public class Bot extends TelegramBot {
             case ASKING_STATS:
                 break;
             case SAVING_DATA:
+                text = "What do you want to save?";
+                args = oneTimeKeyboard("STEPS", "GOAL", "CANCEL");
                 break;
-
+            case SAVE_STEPS:
+                break;
+            case SAVE_GOAL:
+                text = "Which goal do you want to set?";
+                args = oneTimeKeyboard("1000 in a day", "3000 in a day");
+                break;
+            case SAVED_GOAL:
+                text = "Goal saved";
+                break;
+            case SAVE_GOAL_FAILED:
+                text = "Could not save goal";
+                break;
         }
         return new BotResponse(state.getTelegramChat(), text, args);
     }

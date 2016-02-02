@@ -2,7 +2,10 @@ package com.unitn.telegram_bot.model;
 
 import co.vandenham.telegram.botapi.types.Message;
 import com.unitn.local_database.UserData;
+import com.unitn.storage_service.Goal;
 import lombok.Data;
+
+import java.util.Arrays;
 
 /**
  * Created by demiurgo on 1/27/16.
@@ -60,6 +63,11 @@ public class UserState {
         IDLE,
         ASKING_STATS,
         SAVING_DATA,
+        SAVE_STEPS,
+        SAVE_GOAL,
+        SAVED_GOAL,
+        SAVE_GOAL_FAILED,
+
 
     }
 
@@ -84,4 +92,33 @@ public class UserState {
             return null;
         }
     }
+
+
+
+    public static Goal validateGoal(String cmd){
+        Goal goal = null;
+        if(cmd.contains("IN")){
+            goal = new Goal();
+            try{
+                String[] parts = cmd.split("IN");
+
+                System.out.println("Arrays.toString(parts) = " + Arrays.toString(parts));
+                
+                goal.setContent(Integer.parseInt(parts[0].trim())+"");
+                if(parts[1].contains("DAY") || parts[1].contains("WEEK")){
+                    goal.setDueDate(parts[1]);
+                }else{
+                    System.out.println("NULL");
+                    return null;
+                }
+            }catch (NumberFormatException e){
+                System.out.println("ERROR");
+                return null;
+            }
+        }
+
+        System.out.println(goal);
+        return goal;
+    }
+
 }
