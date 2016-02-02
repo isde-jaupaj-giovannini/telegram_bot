@@ -244,6 +244,7 @@ public class Bot extends TelegramBot {
                 break;
             case SAVED_GOAL:
                 text = "Goal saved";
+                args = oneTimeKeyboard("OK");
                 break;
             case SAVE_GOAL_FAILED:
                 text = "Could not save goal";
