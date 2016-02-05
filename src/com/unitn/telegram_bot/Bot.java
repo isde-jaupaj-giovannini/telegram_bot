@@ -43,44 +43,101 @@ public class Bot extends TelegramBot {
     public Bot(final String botToken) {
         super(botToken);
 
-        Transaction.runVoid(() -> {
-            CellLoop<Map<Integer, UserState>> usersL = new CellLoop<>();
+        Transaction.runVoid(new Runnable() {
+            @Override
+            public void run() {
+                CellLoop<Map<Integer, UserState>> usersL = new CellLoop<>();
 
-            userExists =
-                    incomingMessages.snapshot(usersL, (message, users) -> {
-                        final int telId = message.getFrom().getId();
-                        final boolean userExists = pcService.userExists(telId) || users.containsKey(telId);
-                        return new Pair<>(userExists, message);
-                    });
+                userExists =
+                        incomingMessages.snapshot(usersL, new Lambda2<Message, Map<Integer, UserState>, Pair<Boolean, Message>>() {
+                            @Override
+                            public Pair<Boolean, Message> apply(Message message, Map<Integer, UserState> users) {
+                                final int telId = message.getFrom().getId();
+                                final boolean userExists = pcService.userExists(telId) || users.containsKey(telId);
+                                return new Pair<>(userExists, message);
+                            }
+                        });
 
-            fromUsers =
-                    userExists.filter(Pair::getKey).map(Pair::getValue);
+                fromUsers =
+                        userExists.filter(new Lambda1<Pair<Boolean, Message>, Boolean>() {
+                            @Override
+                            public Boolean apply(Pair<Boolean, Message> booleanMessagePair) {
+                                return booleanMessagePair.getKey();
+                            }
+                        }).map( new Lambda1<Pair<Boolean, Message>, Message>() {
+                            @Override
+                            public Message apply(Pair<Boolean, Message> booleanMessagePair) {
+                                return booleanMessagePair.getValue();
+                            }
+                        });
 
-            fromNewUsers =
-                    userExists.filter(pair -> !pair.getKey()).map(Pair::getValue).map(UserState::newUser);
+                fromNewUsers =
+                        userExists.filter(new Lambda1<Pair<Boolean, Message>, Boolean>() {
+                            @Override
+                            public Boolean apply(Pair<Boolean, Message> pair) {
+                                return !pair.getKey();
+                            }
+                        }).map(new Lambda1<Pair<Boolean, Message>, Message>() {
+                            @Override
+                            public Message apply(Pair<Boolean, Message> booleanMessagePair) {
+                                return booleanMessagePair.getValue();
+                            }
+                        }).map(new Lambda1<Message, UserState>() {
+                            @Override
+                            public UserState apply(Message message) {
+                                return UserState.newUser(message);
+                            }
+                        });
 
-            nextState =
-                    fromUsers.snapshot(usersL, (message, usersMap) -> processNextState(message, usersMap.get(message.getFrom().getId())));
+                nextState =
+                        fromUsers.snapshot(usersL, new Lambda2<Message, Map<Integer, UserState>, UserState>() {
+                            @Override
+                            public UserState apply(Message message, Map<Integer, UserState> usersMap) {
+                                return processNextState(message, usersMap.get(message.getFrom().getId()));
+                            }
+                        });
 
-            usersL.loop(nextState.merge(fromNewUsers, (userState, noobStart) -> userState)
-                    .accum(new HashMap<>(), (userState, userMap) -> {
-                        userMap.put(userState.getTelegramId(), userState);
-                        return userMap;
-                    }));
-            users = usersL;
+                usersL.loop(nextState.merge(fromNewUsers, new Lambda2<UserState, UserState, UserState>() {
+                    @Override
+                    public UserState apply(UserState userState, UserState noobStart) {
+                        return userState;
+                    }
+                })
+                        .accum(new HashMap<Integer, UserState>(), new Lambda2<UserState, Map<Integer, UserState>, Map<Integer, UserState>>() {
+                            @Override
+                            public Map<Integer, UserState> apply(UserState userState, Map<Integer, UserState> userMap) {
+                                userMap.put(userState.getTelegramId(), userState);
+                                return userMap;
+                            }
+                        }));
+                users = usersL;
 
-            stateWriter = nextState.merge(fromNewUsers, (userState, noobStart) -> userState)
-                    .map(Bot::processResponse);
+                stateWriter = nextState.merge(fromNewUsers, new Lambda2<UserState, UserState, UserState>() {
+                    @Override
+                    public UserState apply(UserState userState, UserState noobStart) {
+                        return userState;
+                    }
+                })
+                        .map(new Lambda1<UserState, BotResponse>() {
+                            @Override
+                            public BotResponse apply(UserState state) {
+                                return Bot.processResponse(state);
+                            }
+                        });
+            }
         });
 
 
         // This listener outputs to the client
 
-        stateWriter.listen(res -> {
-            if (res.hasArgs()) {
-                sendMessage(res.getChatID(), res.getText(), res.getArgs());
-            } else {
-                sendMessage(res.getChatID(), res.getText());
+        stateWriter.listen(new Handler<BotResponse>() {
+            @Override
+            public void run(BotResponse res) {
+                if (res.hasArgs()) {
+                    Bot.this.sendMessage(res.getChatID(), res.getText(), res.getArgs());
+                } else {
+                    Bot.this.sendMessage(res.getChatID(), res.getText());
+                }
             }
         });
     }
