@@ -17,6 +17,8 @@ import com.unitn.telegram_bot.model.UserState;
 import com.unitn.telegram_bot.model.UserState.*;
 import nz.sodium.*;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -313,9 +315,9 @@ public class Bot extends TelegramBot {
                 text = "Insert how many steps you did today:";
                 break;
             case SAVED_STEPS:
-                text = (state.getNewStepResponse().isStatus() ?  "You reached your daily goal!\nRead a famous quote and have a funny comic!\n": "You are still on your way to reach your goal.\nRead this movie quote!\n")+
-                        state.getNewStepResponse().getMessage()+"\n"
-                    +state.getNewStepResponse().getUrl();
+                text = (state.getNewStepResponse().isStatus() ? "You reached your daily goal!\nRead a famous quote and have a funny comic!\n" : "You are still on your way to reach your goal.\nRead this movie quote!\n") +
+                        state.getNewStepResponse().getMessage() + "\n"
+                        + state.getNewStepResponse().getUrl();
                 args = oneTimeKeyboard("OK");
                 break;
             case SAVE_STEPS_FAILED:
@@ -344,6 +346,21 @@ public class Bot extends TelegramBot {
     public static void main(String args[]) {
 
         final String botToken = System.getenv("TELEGRAM_TOKEN");
+        final String PORT = System.getenv("PORT");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ServerSocket socket = new ServerSocket(Integer.parseInt(PORT));
+                    while (PORT != null) { // Infinite loop to please our dark god HEROKU
+                        socket.accept();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }).start();
 
         if (botToken != null && !botToken.isEmpty()) {
             System.out.println("Using token:" + botToken);
