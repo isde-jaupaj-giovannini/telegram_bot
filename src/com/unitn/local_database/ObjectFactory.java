@@ -37,4 +37,12 @@ public class ObjectFactory {
         return new UserData();
     }
 
+    /**
+     * Create an instance of {@link MeasureData }
+     * 
+     */
+    public MeasureData createMeasureData() {
+        return new MeasureData();
+    }
+
 }

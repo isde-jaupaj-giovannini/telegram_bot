@@ -1,6 +1,8 @@
 package com.unitn.telegram_bot.model;
 
 import co.vandenham.telegram.botapi.types.Message;
+import com.unitn.bl_service.NewStepResponse;
+import com.unitn.local_database.MeasureData;
 import com.unitn.local_database.UserData;
 import com.unitn.storage_service.Goal;
 import lombok.Data;
@@ -21,6 +23,8 @@ public class UserState {
     Integer reg_weight;
     Float reg_height;
 
+    NewStepResponse newStepResponse;
+
     public static UserState newUser(Message message){
         return new UserState(message.getFrom().getId(), message.getChat().getId(), UserStates.NOOB_INTRO);
     }
@@ -35,6 +39,7 @@ public class UserState {
         nextState.reg_name = reg_name;
         nextState.reg_weight = reg_weight;
         nextState.reg_height = reg_height;
+        nextState.newStepResponse = newStepResponse;
         return  nextState;
     }
 
@@ -64,6 +69,8 @@ public class UserState {
         ASKING_STATS,
         SAVING_DATA,
         SAVE_STEPS,
+        SAVED_STEPS,
+        SAVE_STEPS_FAILED,
         SAVE_GOAL,
         SAVED_GOAL,
         SAVE_GOAL_FAILED,
@@ -121,9 +128,17 @@ public class UserState {
         return goal;
     }
 
-    public static int validateSteps(String input){
-        int steps = Integer.parseInt(input.replaceAll("[\\D]", ""));
-        return steps;
+    public static MeasureData validateSteps(String input){
+        try {
+            int steps = Integer.parseInt(input.replaceAll("[\\D]", ""));
+            MeasureData data = new MeasureData();
+            data.setTimestamp(System.currentTimeMillis());
+            data.setSteps(steps);
+
+            return data;
+        }catch (NumberFormatException ex){
+            return null;
+        }
     }
 
 }

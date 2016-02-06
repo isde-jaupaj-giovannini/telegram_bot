@@ -3,6 +3,8 @@
 <project name="isde_telegram_bot" default="start" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
     <!--<property name="server.url" value="https://pacific-crag-3303.herokuapp.com/ws/people?wsdl"/>-->
     <property name="server.url" value="https://calm-thicket-15896.herokuapp.com/ws/pcservice?wsdl"/>
+    <property name="server.url.blservice" value="https://mysterious-dawn-60268.herokuapp.com/ws/blservice?wsdl" />
+
 
     <!-- PART 1: Ivy properties, download, installation and configuration -->
     <property name="ivy.install.version" value="2.4.0-rc1"/>
@@ -30,6 +32,7 @@
     <property name="build.dir" value="build"/>
     <property name="src.dir" value="src"/>
     <property name="src.gen.dir" value="src/com/unitn/storage_service"/>
+    <property name="src.gen.dir.blservice" value="src/com/unitn/bl_service"/>
     <property name="lib.dir" value="libs"/>
 
         <path id="lib.path.id">
@@ -72,6 +75,10 @@
         <delete dir="${src.gen.dir}"/>
         <exec executable="${java.home}/../bin/wsimport">
             <arg line="-d src -keep  ${server.url}"/>
+        </exec>
+        <delete dir="${src.gen.dir.blservice}" />
+        <exec executable="${java.home}/../bin/wsimport">
+            <arg line="-d src -keep  ${server.url.blservice}"/>
         </exec>
     </target>
 

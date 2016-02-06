@@ -5,6 +5,10 @@ import co.vandenham.telegram.botapi.TelegramBot;
 import co.vandenham.telegram.botapi.requests.OptionalArgs;
 import co.vandenham.telegram.botapi.types.Message;
 import co.vandenham.telegram.botapi.types.ReplyKeyboardMarkup;
+import com.unitn.bl_service.BLService;
+import com.unitn.bl_service.BLService_Service;
+import com.unitn.bl_service.NewStepResponse;
+import com.unitn.local_database.MeasureData;
 import com.unitn.process_centric_service.PCService;
 import com.unitn.process_centric_service.ProcessCentricService;
 import com.unitn.storage_service.Goal;
@@ -24,6 +28,7 @@ import static com.unitn.telegram_bot.model.UserState.*;
 public class Bot extends TelegramBot {
 
     static ProcessCentricService pcService = new PCService().getPCSImplPort();
+    static BLService blService = new BLService_Service().getBLServiceImplPort();
 
     // FRP
     StreamSink<Message> incomingMessages = new StreamSink<>();
@@ -63,7 +68,7 @@ public class Bot extends TelegramBot {
                             public Boolean apply(Pair<Boolean, Message> booleanMessagePair) {
                                 return booleanMessagePair.getKey();
                             }
-                        }).map( new Lambda1<Pair<Boolean, Message>, Message>() {
+                        }).map(new Lambda1<Pair<Boolean, Message>, Message>() {
                             @Override
                             public Message apply(Pair<Boolean, Message> booleanMessagePair) {
                                 return booleanMessagePair.getValue();
@@ -146,12 +151,12 @@ public class Bot extends TelegramBot {
         final String cmd = msg.getText().toUpperCase().trim();
         final String text = msg.getText().trim();
 
-        if(state == null){ // This is triggered when a registered users comes back after a server restart, or a clean up of userStates map
+        if (state == null) { // This is triggered when a registered users comes back after a server restart, or a clean up of userStates map
             state = UserState.oldUser(msg);
         }
         switch (state.getState()) {
             case NOOB_INTRO:
-                switch (cmd){
+                switch (cmd) {
                     case "REGISTER":
                         return state.next(UserStates.REGISTERING);
                     case "INFO":
@@ -160,19 +165,19 @@ public class Bot extends TelegramBot {
             case NOOB_INFO:
                 return state.next(UserStates.NOOB_INTRO);
             case REGISTERING:
-                switch (cmd){
+                switch (cmd) {
                     case "YES":
                         return state.next(UserStates.REGISTERING_NAME);
                     case "NO":
                         return state.next(UserStates.NOOB_INTRO);
                 }
             case REGISTERING_NAME:
-                switch (cmd){
+                switch (cmd) {
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
                         String name = validateName(text);
-                        if(name!=null){
+                        if (name != null) {
                             state.setReg_name(name);
                             return state.next(UserStates.REGISTERING_WEIGHT);
                         }
@@ -180,12 +185,12 @@ public class Bot extends TelegramBot {
                 }
                 break;
             case REGISTERING_WEIGHT:
-                switch (cmd){
+                switch (cmd) {
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
                         Integer weight = validateWeight(text);
-                        if(weight!=null){
+                        if (weight != null) {
                             state.setReg_weight(weight);
                             return state.next(UserStates.REGISTERING_HEIGHT);
                         }
@@ -193,16 +198,16 @@ public class Bot extends TelegramBot {
                 }
                 break;
             case REGISTERING_HEIGHT:
-                switch (cmd){
+                switch (cmd) {
                     case "CANCEL":
                         return state.next(UserStates.NOOB_INTRO);
                     default:
                         Float height = validateHeight(text);
-                        if(height!=null){
+                        if (height != null) {
                             state.setReg_height(height);
-                            if(pcService.registerNewUser(state.getUserData())){
+                            if (pcService.registerNewUser(state.getUserData())) {
                                 return state.next(UserStates.REGISTRATION_COMPLETE);
-                            }else{
+                            } else {
                                 return state.next(UserStates.REGISTRATION_FAILED);
                             }
                         }
@@ -213,7 +218,7 @@ public class Bot extends TelegramBot {
                 return state.next(UserStates.NOOB_INTRO);
             case REGISTRATION_COMPLETE: // Intentional Fallthrough to handle command in these two states in the same way
             case IDLE:
-                switch (cmd){
+                switch (cmd) {
                     case "SAVE":
                         return state.next(UserStates.SAVING_DATA);
                     case "STATS":
@@ -221,8 +226,8 @@ public class Bot extends TelegramBot {
                 }
             case ASKING_STATS: // TODO expand
                 return state.next(UserStates.IDLE);
-            case SAVING_DATA: // TODO expand
-                switch (cmd){
+            case SAVING_DATA:
+                switch (cmd) {
                     case "CANCEL":
                         return state.next(UserStates.IDLE);
                     case "GOAL":
@@ -231,15 +236,26 @@ public class Bot extends TelegramBot {
                         return state.next(UserStates.SAVE_STEPS);
                 }
             case SAVE_STEPS:
-                int steps = validateSteps(text); //TODO
+                MeasureData steps = validateSteps(text);
+                if (steps != null) {
+                    steps.setIdTelegram(state.getTelegramId());
+                    NewStepResponse res = blService.saveNewSteps(steps);
+
+                    state.setNewStepResponse(res);
+                    return state.next(UserStates.SAVED_STEPS);
+                } else {
+                    return state.next(UserStates.SAVE_STEPS_FAILED);
+                }
+            case SAVED_STEPS: // Intentional fallthrough
+            case SAVE_STEPS_FAILED:
                 return state.next(UserStates.IDLE);
             case SAVE_GOAL:
                 Goal g = validateGoal(cmd);
-                if(g!=null){
+                if (g != null) {
                     pcService.saveGoal(state.getTelegramId(), g);
                     return state.next(UserStates.SAVED_GOAL);
 
-                }else{
+                } else {
                     return state.next(UserStates.SAVE_GOAL_FAILED);
                 }
             case SAVED_GOAL:// Intentional fallthrough
@@ -296,6 +312,16 @@ public class Bot extends TelegramBot {
             case SAVE_STEPS:
                 text = "Insert how many steps you did today:";
                 break;
+            case SAVED_STEPS:
+                text = (state.getNewStepResponse().isStatus() ?  "You reached your daily goal!\nRead a famous quote and have a funny comic!\n": "You are still on your way to reach your goal.\nRead this movie quote!\n")+
+                        state.getNewStepResponse().getMessage()+"\n"
+                    +state.getNewStepResponse().getUrl();
+                args = oneTimeKeyboard("OK");
+                break;
+            case SAVE_STEPS_FAILED:
+                text = "Could not save steps";
+                args = oneTimeKeyboard("OK");
+                break;
             case SAVE_GOAL:
                 text = "Which goal do you want to set?";
                 args = oneTimeKeyboard("1000 in a day", "3000 in a day");
@@ -306,6 +332,7 @@ public class Bot extends TelegramBot {
                 break;
             case SAVE_GOAL_FAILED:
                 text = "Could not save goal";
+                args = oneTimeKeyboard("OK");
                 break;
         }
         return new BotResponse(state.getTelegramChat(), text, args);
@@ -327,7 +354,7 @@ public class Bot extends TelegramBot {
         }
     }
 
-    public static OptionalArgs oneTimeKeyboard(String ... buttons){
+    public static OptionalArgs oneTimeKeyboard(String... buttons) {
         return new OptionalArgs().replyMarkup(new ReplyKeyboardMarkup.Builder().setOneTimeKeyboard().row(buttons).build());
     }
 
