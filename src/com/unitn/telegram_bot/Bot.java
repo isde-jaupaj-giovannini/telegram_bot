@@ -11,7 +11,6 @@ import com.unitn.storage_service.Goal;
 import com.unitn.telegram_bot.model.BotResponse;
 import com.unitn.telegram_bot.model.UserState;
 import com.unitn.telegram_bot.model.UserState.*;
-import javafx.util.Pair;
 import nz.sodium.*;
 
 import java.util.HashMap;
