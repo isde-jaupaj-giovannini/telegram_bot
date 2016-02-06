@@ -42,6 +42,24 @@ public interface ProcessCentricService {
 
     /**
      * 
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns boolean
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "saveGoal", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.SaveGoal")
+    @ResponseWrapper(localName = "saveGoalResponse", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.SaveGoalResponse")
+    @Action(input = "http://process_centric_service.unitn.com/ProcessCentricService/saveGoalRequest", output = "http://process_centric_service.unitn.com/ProcessCentricService/saveGoalResponse")
+    public boolean saveGoal(
+        @WebParam(name = "arg0", targetNamespace = "")
+        int arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        Goal arg1);
+
+    /**
+     * 
      * @param arg0
      * @return
      *     returns boolean
@@ -69,23 +87,5 @@ public interface ProcessCentricService {
     public boolean registerNewUser(
         @WebParam(name = "arg0", targetNamespace = "")
         UserData arg0);
-
-    /**
-     * 
-     * @param arg1
-     * @param arg0
-     * @return
-     *     returns boolean
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "saveGoal", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.SaveGoal")
-    @ResponseWrapper(localName = "saveGoalResponse", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.SaveGoalResponse")
-    @Action(input = "http://process_centric_service.unitn.com/ProcessCentricService/saveGoalRequest", output = "http://process_centric_service.unitn.com/ProcessCentricService/saveGoalResponse")
-    public boolean saveGoal(
-        @WebParam(name = "arg0", targetNamespace = "")
-        int arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        Goal arg1);
 
 }
