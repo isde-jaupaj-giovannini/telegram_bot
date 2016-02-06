@@ -121,4 +121,9 @@ public class UserState {
         return goal;
     }
 
+    public static int validateSteps(String input){
+        int steps = Integer.parseInt(input.replaceAll("[\\D]", ""));
+        return steps;
+    }
+
 }

@@ -232,6 +232,7 @@ public class Bot extends TelegramBot {
                         return state.next(UserStates.SAVE_STEPS);
                 }
             case SAVE_STEPS:
+                int steps = validateSteps(text); //TODO
                 return state.next(UserStates.IDLE);
             case SAVE_GOAL:
                 Goal g = validateGoal(cmd);
@@ -294,6 +295,7 @@ public class Bot extends TelegramBot {
                 args = oneTimeKeyboard("STEPS", "GOAL", "CANCEL");
                 break;
             case SAVE_STEPS:
+                text = "Insert how many steps you did today:";
                 break;
             case SAVE_GOAL:
                 text = "Which goal do you want to set?";
