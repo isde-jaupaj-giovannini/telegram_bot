@@ -9,7 +9,6 @@
 
     <dependencies>
         <dependency org="com.google.code.gson" name="gson" rev="2.5"/>
-        <dependency org="nz.sodium" name="sodium" rev="1.0.0"/>
         <dependency org="org.projectlombok" name="lombok" rev="1.16.6"/>
     </dependencies>
 </ivy-module>
