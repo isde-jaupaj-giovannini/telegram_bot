@@ -324,7 +324,7 @@ public class Bot extends TelegramBot {
             case SAVED_STEPS:
                 text = (state.getNewStepResponse().isStatus() ? "You reached your daily goal!\nRead a famous quote and have a funny comic!\n" : "You are still on your way to reach your goal.\nRead this movie quote!\n") +
                         state.getNewStepResponse().getMessage() + "\n"
-                        + state.getNewStepResponse().getUrl();
+                        + (state.getNewStepResponse().getUrl()!=null ? state.getNewStepResponse().getUrl() : "" );
                 args = oneTimeKeyboard("OK");
                 break;
             case SAVE_STEPS_FAILED:
