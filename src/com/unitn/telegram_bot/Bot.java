@@ -224,9 +224,10 @@ public class Bot extends TelegramBot {
                     case "SAVE":
                         return state.next(UserStates.SAVING_DATA);
                     case "STATS":
+                        state.setStatsResponse(blService.statistics(state.getTelegramId()));
                         return state.next(UserStates.ASKING_STATS);
                 }
-            case ASKING_STATS: // TODO expand
+            case ASKING_STATS:
                 return state.next(UserStates.IDLE);
             case SAVING_DATA:
                 switch (cmd) {
@@ -306,6 +307,8 @@ public class Bot extends TelegramBot {
                 args = oneTimeKeyboard("SAVE", "STATS");
                 break;
             case ASKING_STATS:
+                text = ""+state.getStatsResponse().getChart();
+                args = oneTimeKeyboard("OK");
                 break;
             case SAVING_DATA:
                 text = "What do you want to save?";

@@ -44,6 +44,18 @@ public interface BLService {
 
     /**
      * 
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getDescription", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.GetDescription")
+    @ResponseWrapper(localName = "getDescriptionResponse", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.GetDescriptionResponse")
+    @Action(input = "http://bl_service.unitn.com/BLService/getDescriptionRequest", output = "http://bl_service.unitn.com/BLService/getDescriptionResponse")
+    public String getDescription();
+
+    /**
+     * 
      * @param arg0
      * @return
      *     returns boolean
@@ -59,14 +71,17 @@ public interface BLService {
 
     /**
      * 
+     * @param arg0
      * @return
-     *     returns java.lang.String
+     *     returns com.unitn.bl_service.StatsResponse
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getDescription", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.GetDescription")
-    @ResponseWrapper(localName = "getDescriptionResponse", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.GetDescriptionResponse")
-    @Action(input = "http://bl_service.unitn.com/BLService/getDescriptionRequest", output = "http://bl_service.unitn.com/BLService/getDescriptionResponse")
-    public String getDescription();
+    @RequestWrapper(localName = "statistics", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.Statistics")
+    @ResponseWrapper(localName = "statisticsResponse", targetNamespace = "http://bl_service.unitn.com/", className = "com.unitn.bl_service.StatisticsResponse")
+    @Action(input = "http://bl_service.unitn.com/BLService/statisticsRequest", output = "http://bl_service.unitn.com/BLService/statisticsResponse")
+    public StatsResponse statistics(
+        @WebParam(name = "arg0", targetNamespace = "")
+        int arg0);
 
 }

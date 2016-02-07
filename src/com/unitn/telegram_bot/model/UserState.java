@@ -2,6 +2,7 @@ package com.unitn.telegram_bot.model;
 
 import co.vandenham.telegram.botapi.types.Message;
 import com.unitn.bl_service.NewStepResponse;
+import com.unitn.bl_service.StatsResponse;
 import com.unitn.local_database.MeasureData;
 import com.unitn.local_database.UserData;
 import com.unitn.storage_service.Goal;
@@ -24,6 +25,7 @@ public class UserState {
     Float reg_height;
 
     NewStepResponse newStepResponse;
+    StatsResponse statsResponse;
 
     public static UserState newUser(Message message){
         return new UserState(message.getFrom().getId(), message.getChat().getId(), UserStates.NOOB_INTRO);
@@ -40,6 +42,7 @@ public class UserState {
         nextState.reg_weight = reg_weight;
         nextState.reg_height = reg_height;
         nextState.newStepResponse = newStepResponse;
+        nextState.statsResponse = statsResponse;
         return  nextState;
     }
 
