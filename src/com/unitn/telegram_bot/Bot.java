@@ -8,6 +8,7 @@ import co.vandenham.telegram.botapi.types.ReplyKeyboardMarkup;
 import com.unitn.bl_service.BLService;
 import com.unitn.bl_service.BLService_Service;
 import com.unitn.bl_service.NewStepResponse;
+import com.unitn.bl_service.StatsResponse;
 import com.unitn.local_database.MeasureData;
 import com.unitn.process_centric_service.PCService;
 import com.unitn.process_centric_service.ProcessCentricService;
@@ -307,7 +308,10 @@ public class Bot extends TelegramBot {
                 args = oneTimeKeyboard("SAVE", "STATS");
                 break;
             case ASKING_STATS:
-                text = ""+state.getStatsResponse().getChart();
+                StatsResponse res = state.getStatsResponse();
+                text = "Total number of Goals achieved "+res.getNrGoalsDone()+"/"+ (res.getNrGoalsDone()+res.getNrTodoGoals())
+                        +"\nGraph of steps done in the last 7 days"
+                        +state.getStatsResponse().getChart();
                 args = oneTimeKeyboard("OK");
                 break;
             case SAVING_DATA:

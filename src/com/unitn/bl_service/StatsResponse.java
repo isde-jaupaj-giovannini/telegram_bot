@@ -17,6 +17,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="chart" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="nrGoalsDone" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="nrTodoGoals" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -27,11 +29,15 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "statsResponse", propOrder = {
-    "chart"
+    "chart",
+    "nrGoalsDone",
+    "nrTodoGoals"
 })
 public class StatsResponse {
 
     protected String chart;
+    protected int nrGoalsDone;
+    protected int nrTodoGoals;
 
     /**
      * Gets the value of the chart property.
@@ -55,6 +61,38 @@ public class StatsResponse {
      */
     public void setChart(String value) {
         this.chart = value;
+    }
+
+    /**
+     * Gets the value of the nrGoalsDone property.
+     * 
+     */
+    public int getNrGoalsDone() {
+        return nrGoalsDone;
+    }
+
+    /**
+     * Sets the value of the nrGoalsDone property.
+     * 
+     */
+    public void setNrGoalsDone(int value) {
+        this.nrGoalsDone = value;
+    }
+
+    /**
+     * Gets the value of the nrTodoGoals property.
+     * 
+     */
+    public int getNrTodoGoals() {
+        return nrTodoGoals;
+    }
+
+    /**
+     * Sets the value of the nrTodoGoals property.
+     * 
+     */
+    public void setNrTodoGoals(int value) {
+        this.nrTodoGoals = value;
     }
 
 }

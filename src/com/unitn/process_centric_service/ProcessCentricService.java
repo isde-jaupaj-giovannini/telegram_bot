@@ -48,21 +48,6 @@ public interface ProcessCentricService {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "userExists", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.UserExists")
-    @ResponseWrapper(localName = "userExistsResponse", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.UserExistsResponse")
-    @Action(input = "http://process_centric_service.unitn.com/ProcessCentricService/userExistsRequest", output = "http://process_centric_service.unitn.com/ProcessCentricService/userExistsResponse")
-    public boolean userExists(
-        @WebParam(name = "arg0", targetNamespace = "")
-        int arg0);
-
-    /**
-     * 
-     * @param arg0
-     * @return
-     *     returns boolean
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "registerNewUser", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.RegisterNewUser")
     @ResponseWrapper(localName = "registerNewUserResponse", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.RegisterNewUserResponse")
     @Action(input = "http://process_centric_service.unitn.com/ProcessCentricService/registerNewUserRequest", output = "http://process_centric_service.unitn.com/ProcessCentricService/registerNewUserResponse")
@@ -87,5 +72,20 @@ public interface ProcessCentricService {
         int arg0,
         @WebParam(name = "arg1", targetNamespace = "")
         Goal arg1);
+
+    /**
+     * 
+     * @param arg0
+     * @return
+     *     returns boolean
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "userExists", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.UserExists")
+    @ResponseWrapper(localName = "userExistsResponse", targetNamespace = "http://process_centric_service.unitn.com/", className = "com.unitn.process_centric_service.UserExistsResponse")
+    @Action(input = "http://process_centric_service.unitn.com/ProcessCentricService/userExistsRequest", output = "http://process_centric_service.unitn.com/ProcessCentricService/userExistsResponse")
+    public boolean userExists(
+        @WebParam(name = "arg0", targetNamespace = "")
+        int arg0);
 
 }
